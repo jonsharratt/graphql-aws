@@ -4,7 +4,6 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLList,
-  GraphQLSchema,
   GraphQLString
 } from 'graphql/lib/type';
 
@@ -37,7 +36,7 @@ exports.queries = {
       });
     }
   }
-}
+};
 
 exports.mutations = {
   createTopic: {

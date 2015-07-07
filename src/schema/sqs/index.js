@@ -4,7 +4,6 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLList,
-  GraphQLSchema,
   GraphQLString,
   GraphQLInt,
   GraphQLEnumType
@@ -92,10 +91,12 @@ exports.queries = {
     // TODO: Unsure of best way to do this.
     // could create an attribute object type instead and map it.
     resolve: (root, {url, attributeNames}) => {
-      return sqs.getQueueAttributesAsync({ QueueUrl: url, AttributeNames: attributeNames }).then((result) => {
+      return sqs.getQueueAttributesAsync({
+        QueueUrl: url,
+        AttributeNames: attributeNames
+      }).then(() => {
         return {
-          url: url,
-          visibilityTimeout: result.Attributes['VisibilityTimeout']
+          url: url
         };
       });
     }
@@ -114,7 +115,7 @@ exports.queries = {
       });
     }
   }
-}
+};
 
 exports.mutations = {
   createQueue: {
