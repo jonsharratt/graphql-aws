@@ -118,6 +118,20 @@ exports.queries = {
 };
 
 exports.mutations = {
+  deleteQueue: {
+    type: new GraphQLNonNull(GraphQLString),
+    args: {
+      url: {
+        name: 'url',
+        type: new GraphQLNonNull(GraphQLString)
+      }
+    },
+    resolve: (obj, {url}) => {
+      return sqs.deleteQueueAsync({ QueueUrl: url }).then((result) => {
+        return result.ResponseMetadata.RequestId;
+      });
+    }
+  },
   createQueue: {
     type: type,
     args: {
