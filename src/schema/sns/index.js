@@ -9,7 +9,7 @@ import {
 
 const sns = new Promise.promisifyAll(new AWS.SNS());
 
-const topicType = new GraphQLObjectType({
+const type = new GraphQLObjectType({
   name: 'Topic',
   description: 'Represents an Amazon SNS topic.',
   fields: () => ({
@@ -23,7 +23,7 @@ const topicType = new GraphQLObjectType({
 
 exports.queries = {
   topics: {
-    type: new GraphQLList(topicType),
+    type: new GraphQLList(type),
     args: {
       nextToken: {
         name: 'Next token',
@@ -40,7 +40,7 @@ exports.queries = {
 
 exports.mutations = {
   createTopic: {
-    type: topicType,
+    type: type,
     args: {
       name: {
         name: 'name',
@@ -49,6 +49,20 @@ exports.mutations = {
     },
     resolve: (obj, {name}) => {
       return sns.createTopicAsync({ Name: name });
+    }
+  },
+  deleteTopic: {
+    type: GraphQLString,
+    args: {
+      arn: {
+        name: 'arn',
+        type: new GraphQLNonNull(GraphQLString)
+      }
+    },
+    resolve: (obj, {arn}) => {
+      return sns.deleteTopicAsync({ TopicArn: arn }).then((result) => {
+        return result.ResponseMetadata.RequestId;
+      });
     }
   }
 };
