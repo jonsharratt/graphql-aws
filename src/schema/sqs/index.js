@@ -115,6 +115,14 @@ const messageType = new GraphQLObjectType({
     Body: {
       type: GraphQLString,
       description: `The message's contents (not URL-encoded).`
+    },
+    ReceiptHandle: {
+      type: GraphQLString,
+      description: `An identifier associated with the act of
+                    receiving the message. A new receipt handle
+                    is returned every time you receive a message.
+                    When deleting a message, you provide the
+                    last received receipt handle to delete the message.`
     }
   })
 });
