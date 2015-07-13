@@ -182,6 +182,26 @@ exports.mutations = {
               .then(result => result.Messages);
     }
   },
+  deleteMessage: {
+    type: new GraphQLNonNull(GraphQLString),
+    args: {
+      QueueUrl: {
+        description: 'The URL of the Amazon SQS queue to take action on.',
+        type: new GraphQLNonNull(GraphQLString)
+      },
+      ReceiptHandle: {
+        description: 'The receipt handle associated with the message to delete.',
+        type: new GraphQLNonNull(GraphQLString)
+      }
+    },
+    resolve: (obj, {QueueUrl, ReceiptHandle}) => {
+      const params = {
+        QueueUrl: QueueUrl,
+        ReceiptHandle: ReceiptHandle
+      };
+      return sqs.deleteMessageAsync(params).then(result => result.ResponseMetadata.RequestId);
+    }
+  },
   deleteQueue: {
     type: new GraphQLNonNull(GraphQLString),
     args: {
@@ -194,7 +214,7 @@ exports.mutations = {
       const params = {
         QueueUrl: QueueUrl
       };
-      return sqs.deleteQueueAsync(params);
+      return sqs.deleteMessageAsync(params).then(result => result.ResponseMetadata.RequestId);
     }
   },
   createQueue: {
