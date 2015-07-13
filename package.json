@@ -17,7 +17,7 @@
   "scripts": {
     "start": "node index.js",
     "lint": "eslint src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 0"
   },
   "devDependencies": {
     "babel-eslint": "^3.1.18",
