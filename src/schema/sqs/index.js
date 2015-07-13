@@ -120,7 +120,7 @@ const messageType = new GraphQLObjectType({
 });
 
 exports.queries = {
-  queues: {
+  listQueues: {
     type: new GraphQLList(GraphQLString),
     args: {
       QueueNamePrefix: {
