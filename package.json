@@ -21,8 +21,10 @@
   },
   "devDependencies": {
     "babel-eslint": "^3.1.18",
+    "chai": "^3.0.0",
     "eslint": "^0.23.0",
-    "eslint-plugin-react": "^2.5.2"
+    "eslint-plugin-react": "^2.5.2",
+    "sinon": "^1.15.4"
   },
   "author": "Red Badger Consulting Ltd",
   "license": "MIT",
