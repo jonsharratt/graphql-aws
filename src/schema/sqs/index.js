@@ -1,14 +1,13 @@
 import AWS from 'aws-sdk';
 import Promise from 'bluebird';
 import merge from 'merge';
-import helpers from '../../utils/helpers'
+import helpers from '../../utils/helpers';
 import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLList,
   GraphQLString,
-  GraphQLInputObjectType,
-  GraphQLInt
+  GraphQLInputObjectType
 } from 'graphql/lib/type';
 
 const sqs = new Promise.promisifyAll(new AWS.SQS());
@@ -70,10 +69,8 @@ const type = new GraphQLObjectType({
           QueueUrl: root.QueueUrl,
           AttributeNames: ['All']
         };
-
-        return sqs.getQueueAttributesAsync(params).then((result) => {
-          return result.Attributes;
-        });
+        return sqs.getQueueAttributesAsync(params)
+                .then(result => result.Attributes);
       }
     }
   })
@@ -89,6 +86,39 @@ const attributesInputType = new GraphQLInputObjectType({
   fields: () => (attributeFields)
 });
 
+const messageType = new GraphQLObjectType({
+  name: 'Message',
+  description: 'Represents an Amazon SQS message queue.',
+  fields: () => ({
+    MessageId: {
+      type: GraphQLString,
+      description: `An element containing the message ID
+                    of the message sent to the queue.`
+    },
+    MD5OfMessageBody: {
+      type: GraphQLString,
+      description: `An MD5 digest of the non-URL-encoded
+                    message body string. This can be used to
+                    verify that Amazon SQS received the message
+                    correctly. Amazon SQS first URL decodes the
+                    message before creating the MD5 digest`,
+      resolve: (root) => { return root.MD5OfMessageBody || root.MD5OfBody; }
+    },
+    MD5OfMessageAttributes: {
+      type: GraphQLString,
+      description: `An MD5 digest of the non-URL-encoded message
+                    attribute string. This can be used to verify
+                    that Amazon SQS received the message correctly.
+                    Amazon SQS first URL decodes the message before
+                    creating the MD5 digest.`
+    },
+    Body: {
+      type: GraphQLString,
+      description: `The message's contents (not URL-encoded).`
+    }
+  })
+});
+
 exports.queries = {
   queues: {
     type: new GraphQLList(GraphQLString),
@@ -96,23 +126,59 @@ exports.queries = {
       QueueNamePrefix: {
         name: 'QueueNamePrefix',
         type: GraphQLString,
-        description: 'Only those queues whose name begins with the specified string are returned.'
+        description: `Only those queues whose name begins
+                      with the specified string are returned.`
       }
     },
     resolve: (root, {QueueNamePrefix}) => {
-      return sqs.listQueuesAsync(QueueNamePrefix).then((result) => {
-        return result.QueueUrls;
-      });
+      return sqs.listQueuesAsync(QueueNamePrefix)
+              .then(result => result.QueueUrls);
     }
   }
 };
 
 exports.mutations = {
+  sendMessage: {
+    type: messageType,
+    args: {
+      QueueUrl: {
+        description: 'The URL of the Amazon SQS queue to take action on.',
+        type: new GraphQLNonNull(GraphQLString)
+      },
+      MessageBody: {
+        description: 'The message to send. String maximum 256 KB in size.',
+        type: new GraphQLNonNull(GraphQLString)
+      }
+    },
+    resolve: (obj, {QueueUrl, MessageBody}) => {
+      const params = {
+        QueueUrl: QueueUrl,
+        MessageBody: MessageBody
+      };
+      return sqs.sendMessageAsync(params);
+    }
+  },
+  receiveMessage: {
+    type: new GraphQLList(messageType),
+    args: {
+      QueueUrl: {
+        description: 'The URL of the Amazon SQS queue to take action on.',
+        type: new GraphQLNonNull(GraphQLString)
+      }
+    },
+    resolve: (obj, {QueueUrl}) => {
+      const params = {
+        QueueUrl: QueueUrl
+      };
+      return sqs.receiveMessageAsync(params)
+              .then(result => result.Messages);
+    }
+  },
   deleteQueue: {
     type: new GraphQLNonNull(GraphQLString),
     args: {
       QueueUrl: {
-        name: 'url',
+        description: 'The URL of the Amazon SQS queue to take action on.',
         type: new GraphQLNonNull(GraphQLString)
       }
     },
@@ -140,12 +206,13 @@ exports.mutations = {
     },
     resolve: (obj, {QueueName, Attributes}) => {
       const params = {
-        QueueName: QueueName,
-        Attributes: helpers.removeUndefinedKeys(Attributes)
+        QueueName: QueueName
       };
-      return sqs.createQueueAsync(params).then((result) => {
-        return { QueueUrl: result.QueueUrl };
-      });
+      if (Attributes) {
+        merge(params, { Attributes: helpers.removeUndefinedKeys(Attributes) });
+      }
+      return sqs.createQueueAsync(params)
+        .then((result) => { return { QueueUrl: result.QueueUrl }; });
     }
   }
 };
