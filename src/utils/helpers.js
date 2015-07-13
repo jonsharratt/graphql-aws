@@ -4,4 +4,5 @@ exports.removeUndefinedKeys = function (obj) {
       delete obj[key];
     };
   });
+  return obj;
 }
