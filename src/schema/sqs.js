@@ -1,14 +1,14 @@
 import AWS from 'aws-sdk';
 import Promise from 'bluebird';
 import merge from 'merge';
-import helpers from '../../utils/helpers';
+import helpers from '../utils/helpers';
 import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLList,
   GraphQLString,
   GraphQLInputObjectType
-} from 'graphql/lib/type';
+} from 'graphql';
 
 const sqs = new Promise.promisifyAll(new AWS.SQS());
 
@@ -77,12 +77,12 @@ const type = new GraphQLObjectType({
 });
 
 const attributesType = new GraphQLObjectType({
-  name: 'Queue Attributes',
+  name: 'QueueAttributes',
   fields: () => (attributeFields)
 });
 
 const attributesInputType = new GraphQLInputObjectType({
-  name: 'Queue Attributes Input',
+  name: 'QueueAttributesInput',
   fields: () => (attributeFields)
 });
 

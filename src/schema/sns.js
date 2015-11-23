@@ -5,7 +5,7 @@ import {
   GraphQLNonNull,
   GraphQLList,
   GraphQLString
-} from 'graphql/lib/type';
+} from 'graphql';
 
 const sns = new Promise.promisifyAll(new AWS.SNS());
 

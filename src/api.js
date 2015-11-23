@@ -1,30 +1,16 @@
-import restify from 'restify';
+import express from 'express';
 import { graphql } from 'graphql';
+import graphqlHTTP from 'express-graphql';
 
 import schema from './schema';
 
-const port = process.env.PORT || 3000;
+const app = express();
+app.use('/', graphqlHTTP({ schema: schema, graphiql: true }));
 
-const info = {
-  name: 'Amazon AWS GraphQL Server',
-  version: '0.0.1'
-};
-
-const server = restify.createServer(info);
-server.use(restify.bodyParser());
-
-// Root
-server.get('/', (req, res) => {
-  res.json(200, info);
+const server = app.listen(3000, function () {
+  const host = server.address().address;
+  const port = server.address().port;
+  console.log('Amazon GraphQL Server running.');
+  console.log('http://%s:%s', host, port);
 });
 
-// Query
-server.post('/query', (req, res) => {
-  const query = req.body;
-  graphql(schema, query).then( (result) => {
-    res.json(result);
-  });
-});
-
-server.listen(port);
-console.log('Amazon GraphQL Server running.');

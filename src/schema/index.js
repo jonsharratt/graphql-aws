@@ -1,13 +1,12 @@
-import { GraphQLSchema, GraphQLObjectType } from 'graphql/lib/type';
+import { GraphQLSchema, GraphQLObjectType } from 'graphql';
 import sqsSchema from './sqs';
 import snsSchema from './sns';
-import merge from 'merge';
 
-const queries = merge(
+const queries = Object.assign(
   snsSchema.queries,
   sqsSchema.queries
 );
-const mutations = merge(
+const mutations = Object.assign(
   snsSchema.mutations,
   sqsSchema.mutations
 );
